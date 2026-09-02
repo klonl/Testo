@@ -1,0 +1,59 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel-app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    user: "root"
+    command: sh ./entrypoint.sh
+    ports:
+      - "80:80"
+    dns:
+      - 100.100.100.100
+      - 8.8.8.8
+    networks:
+      - laravel
+      - tailscale
+
+  vite:
+    image: node:22
+    container_name: laravel-vite
+    working_dir: /var/www
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    volumes:
+      - .:/var/www
+    user: "root"
+    ports:
+      - "5173:5173"
+    networks:
+      - laravel
+      - tailscale
+
+  db:
+    image: postgres:16.0
+    container_name: laravel-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: laravel22
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - laravel
+      - tailscale
+
+networks:
+  laravel:
+  tailscale:
+    driver: bridge
+
+volumes:
+  pgdata:
+  tailscale-data:
