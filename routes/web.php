@@ -1,15 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+Route::get('/', ['App\Http\Controllers\StoreController', 'index'])->name('store.index');
+Route::get('/orders', fn () => redirect()->route('store.index'))->name('orders.index');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::post('/orders', ['App\Http\Controllers\OrderController', 'store'])->name('orders.store');
+Route::get('/orders/{order}/status', ['App\Http\Controllers\OrderController', 'status'])->name('orders.status');
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+Route::post('/orders/{order}/pay-test', ['App\Http\Controllers\OrderController', 'payTest'])->name('orders.pay-test');
+Route::post('/webhooks/payment', ['App\Http\Controllers\PaymentWebhookController', 'handle'])->name('webhooks.payment');
